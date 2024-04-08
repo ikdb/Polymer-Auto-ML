@@ -1,120 +1,85 @@
-# tab1.py
 import streamlit as st
 
 def display(tab):
-    tab.subheader("Pycaret")
+    tab.subheader("PyCaret for Polymer Property Prediction")
 
     tab.write("""
-           In this tutorial, we delve into the application of AutoGluon for predicting outcomes based on tabular data, showcasing its unique ability to simplify the often complex world of machine learning. Developed by AWS Labs, AutoGluon takes the grunt work out of model training, providing an accessible and efficient tool for professionals and enthusiasts alike.
+    In this tutorial, we focus on utilizing the PyCaret library to predict polymer properties based on SMILES strings, which are textual representations of chemical structures. We will preprocess these SMILES strings to generate molecular fingerprints, transforming them into a format suitable for machine learning models. You can find the dataset used in this tutorial at [this link](https://khazana.gatech.edu/dataset/).
 
-           What sets AutoGluon apart is its advanced automation capabilities, notably in hyperparameter tuning, model selection, and feature engineering, significantly reducing the time typically required to produce a robust machine learning model. Furthermore, its seamless integration and scalability features, backed by AWS's powerful cloud infrastructure, allow it to stand out in the diverse ecosystem of AutoML libraries.
-           Step 1: Install Necessary Libraries
-           """)
+    PyCaret is an AutoML library that simplifies many of the steps involved in the machine learning pipeline, including data preprocessing, model selection, and hyperparameter tuning. This makes it an ideal choice for quickly developing and comparing different models to predict the properties of polymers.
+    """)
+
     tab.subheader("Step 1: Install Necessary Libraries")
-
     tab.code("""
-    %pip install pandas
-    %pip install pycaret
-    %pip install numpy""")
+%pip install pycaret
+%pip install psmiles
+%pip install pandas
+%pip install numpy
+%pip install matplotlib
+""")
+
     tab.subheader("Step 2: Importing Libraries and Loading Data")
     tab.code("""
-    from psmiles import PolymerSmiles as PS
-    import pandas as pd
-    import numpy as np
-    from autogluon.tabular import TabularDataset, TabularPredictor
+from pycaret.regression import *
+import pandas as pd
+import numpy as np
+from psmiles import PolymerSmiles as PS
 
-    # Read csv and filter EGC
-    egc_df = pd.read_csv("../recources/export.csv")
-    egc_df = egc_df[egc_df.property == "Egc"]
-                """)
+# Load and preprocess data
+data_path = 'your_data_path/export.csv'
+data_df = pd.read_csv(data_path)
+data_df = data_df[data_df.property == 'Egc']
+""")
 
-    tab.subheader("Step 3: Generating Fingerprints from SMILES Strings")
+    tab.subheader("Step 3: Data Preprocessing and Feature Engineering")
     tab.code("""
-                #creating fingerprints for SS
-    smile_string_list = list(egc_df.smiles.values)
-    value_list = list(egc_df.value.values)
-    finger_print_list = []
-    for smile_string in smile_string_list:
-        curren_polymere = PS(smile_string)
-        finger_print_list.append(curren_polymere.fingerprint())
+# Generate molecular fingerprints from SMILES strings
+smile_strings = data_df['smiles'].values
+fingerprints = [PS(smile).fingerprint() for smile in smile_strings]
+data_df['fingerprints'] = fingerprints
 
+# Preparing the final dataset
+features_df = pd.DataFrame(data_df['fingerprints'].tolist(), index=data_df.index)
+final_df = pd.concat([features_df, data_df['Egc']], axis=1)
+""")
 
-    fp_list_formatted = []
-    for i in finger_print_list:
-        fp_list_formatted.append(i.tolist())
-
-    print(len(fp_list_formatted[0]))
-    ss_fp_egc_df = pd.DataFrame({'Smile': smile_string_list, 'Finger_prints': fp_list_formatted, 'Egc': value_list})
-    print(ss_fp_egc_df)
-
-
-
-    final_df = pd.DataFrame(
-        np.array(finger_print_list), index=smile_string_list
-    )
-
-    ss = pd.Series(value_list, index=smile_string_list, name="Egc")
-
-    concatenated_df = pd.concat(
-        [final_df, ss],
-        axis=1,
-    ).reset_index(names="psmiles")
-    print(concatenated_df.set_index("psmiles").columns)
-
-
-
-    auto_ml_df = concatenated_df.sample(frac=1, random_state=0)#shulles the df
-    print(auto_ml_df.shape)
-
-
-    psmlies_column = auto_ml_df["psmiles"]
-    auto_ml_df = auto_ml_df.drop(columns=["psmiles"])
-    auto_ml_df.reset_index(drop=True, inplace=True)
-    print(auto_ml_df.shape)
-                """)
-
-    tab.subheader("Step 4: Split the Dataset into Training and Testing Sets")
+    tab.subheader("Step 4: Setting up the Environment in PyCaret")
     tab.code("""
-                split_index = int(len(auto_ml_df) * 0.8)
+from pycaret.regression import setup, compare_models, tune_model, predict_model
 
-    train_df = auto_ml_df[:split_index]
-    test_df = auto_ml_df[split_index:]
-    """)
+# Initialize the PyCaret environment
+exp_reg = setup(data=final_df, target='Egc', silent=True, session_id=123)
+""")
 
-    tab.subheader("Step 5: Prepare the Data")
+    tab.subheader("Step 5: Comparing and Selecting Models")
     tab.code("""
-    X_train = train_df.drop(columns=[target_column]).to_numpy()
-    y_train = train_df[target_column].to_numpy()
-
-    X_test = test_df.drop(columns=[target_column]).to_numpy()
-    y_test = test_df[target_column].to_numpy()
-
-    # Initialize and train the TabularPredictor
-    target_column = "Egc
-    best_model = compare_models()
-
-print("best Modell:  ",best_model)
-
-trained_model = tune_model(best_model)
-
-predictions = predict_model(trained_model, data=test_data)
-predictions.head()""")
-
-    tab.subheader("""Step6: Train and evaluate the model""")
-    tab.code("""
-setup(train_data, target='Egc')
-
 best_model = compare_models()
+""")
 
-print("best Modell:  ",best_model)
+    tab.subheader("Step 6: Model Tuning")
+    tab.code("""
+tuned_model = tune_model(best_model)
+""")
 
-trained_model = tune_model(best_model)
+    tab.subheader("Step 7: Model Evaluation")
+    tab.code("""
+predictions = predict_model(tuned_model)
+""")
 
-predictions = predict_model(trained_model, data=test_data)
-predictions.head()
-evaluate_model(best_model)
+    tab.subheader("Step 8: Visualization of Predictions")
+    tab.code("""
+import matplotlib.pyplot as plt
 
+plt.figure(figsize=(10, 6))
+plt.scatter(predictions['Label'], predictions['Egc'], edgecolors='k')
+plt.plot([predictions['Egc'].min(), predictions['Egc'].max()], [predictions['Egc'].min(), predictions['Egc'].max()], 'r--', lw=2)
+plt.xlabel('Predicted Values')
+plt.ylabel('Actual Values')
+plt.title('Prediction Accuracy')
+plt.show()
+""")
+
+    tab.subheader("Conclusion")
+    tab.write("""
+    Through this tutorial, we have explored the process of using PyCaret to predict polymer properties from SMILES strings. From data preprocessing and feature engineering to model training and evaluation, PyCaret offers a comprehensive and accessible AutoML solution for rapid model development.
     """)
-    tab.subheader("""Step 7: Export model""")
-    tab.code("""save_model(best_model,"best_pycarret_model")""")
-

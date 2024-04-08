@@ -140,7 +140,7 @@ display(model_overview)""")
     google_colab_url = "https://colab.research.google.com/drive/1SwAjYexsVOtiQ7svw1QZspZoc0I1S81J?usp=sharing"
 
     # Öffnen Sie die Datei im Binärmodus.
-    col1, col2, col3 = tab.columns(3)
+    """col1, col2 = tab.columns(2)
     with open(auto_gluon_path, "rb") as file:
         bytes_data = file.read()
     col1.download_button(label="Download Jupyter Notebook", data=bytes_data, file_name="Auto_Gluon_tutorial.ipynb",
@@ -150,5 +150,5 @@ display(model_overview)""")
     col2.download_button(label="Download Python file", data=bytes_data_py, file_name="Auto_Gluon_tutorial.py",
                          mime="application/octet-stream")
 
-    # Erstelle einen Button in der dritten Spalte, der die Nutzer zu Google Colab weiterleitet
-    col3.link_button('Open in Google Colab', google_colab_url)
+"""
+

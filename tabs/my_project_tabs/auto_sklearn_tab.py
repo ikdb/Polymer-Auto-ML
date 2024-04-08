@@ -1,93 +1,89 @@
-# tab1.py
-import streamlit as st
-
 def display(tab):
-    ####autosklearn###
+    tab.subheader("Auto-Sklearn Tutorial")
 
-    tab.header("AutoSklearn")
+    # Beschreibung aktualisieren
     tab.write("""
-        Auto-machine learning frameworks are designed to automate the process of applying machine learning algorithms. These frameworks optimize machine learning pipelines using various techniques such as Bayesian optimization, meta-learning, and ensemble learning. This approach is particularly beneficial for applying high-quality machine learning models without an extensive background in the field or the need for extensive trial-and-error tuning.
+    In this tutorial, we explore the application of Auto-Sklearn for predicting outcomes based on tabular data, showcasing its capability to automate the machine learning process. Developed as part of the AutoML project at the University of Freiburg, Auto-Sklearn abstracts the complexity involved in model training, offering an accessible and efficient tool for both professionals and enthusiasts.
 
-        In this tutorial, we will explore the application of an auto-ML framework to predict polymer properties from SMILES strings, which encode the structure of chemical species. Our approach will include generating molecular fingerprints from these SMILES strings to provide a numerical representation that can be utilized in machine learning predictions.
-        """)
-
+    Auto-Sklearn excels in automated machine learning tasks such as hyperparameter tuning, model selection, and feature engineering, drastically reducing the time required to develop robust machine learning models. With its advanced features and integration capabilities, Auto-Sklearn is a prominent tool in the AutoML library ecosystem.
+    """)
     tab.subheader("Step 1: Install Necessary Libraries")
     tab.code("""
-        %pip install pandas
-        %pip install psmiles
-        %pip install scikit-learn
-        %pip install auto-ml
-        """)
+    %pip install pandas
+    %pip install numpy
+    %pip install autosklearn
+    %pip install scikit-learn
+    """)
 
-    tab.subheader("Step 2: Preparing the Dataset")
+    tab.subheader("Step 2: Importing Libraries and Loading Data")
     tab.code("""
-        import pandas as pd
-        from psmiles import PolymerSmiles as PS
+    import pandas as pd
+    import numpy as np
+    from psmiles import PolymerSmiles as PS
+    from autosklearn.regression import AutoSklearnRegressor
 
-        # Load your dataset
-        data = pd.read_csv("/path/to/your/dataset.csv")
+    # Read csv and filter EGC
+    egc_df = pd.read_csv("path/to/export.csv")
+    egc_df = egc_df[egc_df.property == "Egc"]
+    """)
 
-        # Filter for a specific property, for example 'Egc'
-        data = data[data.property == "Egc"]
-        """)
-
-    tab.subheader("### Step 3: Generating Fingerprints from SMILES Strings")
+    tab.subheader("Step 3: Preprocessing and Feature Engineering")
     tab.code("""
-        # Create fingerprints for each polymer based on the SMILES strings
-        fingerprints = []
-        for smile in data['smiles']:
-            polymer = PS(smile)
-            fingerprint = polymer.fingerprint()
-            fingerprints.append(fingerprint)
+    smile_string_list = list(egc_df.smiles.values)
+    value_list = list(egc_df.value.values)
 
-        # Add fingerprints to the dataframe
-        data['fingerprints'] = fingerprints
-        """)
+    finger_print_list = []
+    for ss in smile_string_list:
+        current_polymer = PS(ss)
+        finger_print_list.append(current_polymer.fingerprint())
 
-    tab.subheader("Step 4: Preparing the Data for Auto-ML")
+    fp_list_formatted = [fp.tolist() for fp in finger_print_list]
+
+    ss_fp_egc_df = pd.DataFrame({
+        'Smile': smile_string_list,
+        'Finger_prints': fp_list_formatted,
+        'Egc': value_list
+    })
+    print(ss_fp_egc_df.head())
+    """)
+
+    tab.subheader("Step 4: Preparing the Dataset")
     tab.code("""
-        # Prepare the data for training
-        X = list(data['fingerprints'])
-        y = data['value'].values  # Assuming 'value' is the column with property measurements
-        """)
+    # Assuming that the fingerprint data is numeric and suitable for model input
+    X = np.array(fp_list_formatted)
+    y = np.array(value_list)
 
-    tab.write("### Step 5: Training with an Auto-ML Framework")
+    # Split the dataset into training and testing sets
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    """)
+
+    tab.subheader("Step 5: Model Training")
     tab.code("""
-        from auto_ml import AutoMLRegressor  # Hypothetical import, replace with actual library
+    # Initialize AutoSklearn regressor
+    autosklearn_regressor = AutoSklearnRegressor(
+        time_left_for_this_task=120,
+        per_run_time_limit=30,
+        n_jobs=-1
+    )
+    autosklearn_regressor.fit(X_train, y_train)
 
-        # Initialize the AutoML regressor
-        regressor = AutoMLRegressor(
-            time_left_for_this_task=120, 
-            per_run_time_limit=30
-        )
+    # Display the best models found by AutoSklearn
+    print(autosklearn_regressor.leaderboard())
+    """)
 
-        # Train the model
-        regressor.fit(X, y)
-        """)
-
-    tab.write("### Step 6: Model Evaluation")
+    tab.subheader("Step 6: Evaluate the Model")
     tab.code("""
-        from sklearn.metrics import mean_absolute_error, r2_score, mean_squared_error
+    from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
-        # Predict on the test set
-        y_pred = regressor.predict(X_test)
+    train_predictions = autosklearn_regressor.predict(X_train)
+    test_predictions = autosklearn_regressor.predict(X_test)
 
-        # Calculate performance metrics
-        mae = mean_absolute_error(y_test, y_pred)
-        mse = mean_squared_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
+    # Calculate metrics for training data
+    r2_train = r2_score(y_train, train_predictions)
+    print("R2 for training data:", r2_train)
 
-        print(f"MAE: {mae}, MSE: {mse}, R^2: {r2}")
-        """)
-
-    tab.write("""
-        By following these steps, you can undertake a comprehensive process for predicting the properties of polymers from their SMILES strings using an auto-ML framework. This methodology leverages the power of automated machine learning to significantly simplify the predictive modeling process.
-        """)
-
-    # Instructions to download necessary files for local setup, Google Colab, and Python script
-    tab.write("### Download the Tutorial Files")
-    # Add your download buttons and links here...
-    # End of Auto-ML Tutorial
-    # pycaret
-
-
+    # Calculate metrics for testing data
+    r2_test = r2_score(y_test, test_predictions)
+    print("R2 for test data:", r2_test)
+    """)

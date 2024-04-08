@@ -19,19 +19,14 @@ def display(tab):
               " in data and learn from them without being explicitly programmed. It relies on algorithms and statistical"
               " models that empower computers to learn from experiences.")
 
-    tab.subheader("Automated machine learning")
-    tab.write("""AutoML is like a detective's assistant! Imagine, instead of the detective needing to learn each individual
-     method to recognize patterns in data, there's a magical tool that helps them work faster and easier. With AutoML,
-      we use computers to automatically discover the best methods for pattern recognition and prediction in data.
-      It acts as an intelligent helper guiding the detective without requiring them to start from scratch.
-    What's special about AutoML is that it takes on the complex parts of machine learning, making it more accessible 
-    for everyone – including non-programmers or experts. AutoML automates model selection, configuration, and optimization
-     for machine learning tasks. It automatically identifies the best algorithms and hyperparameters for a specific problem,
-      without requiring human intervention or extensive expertise. Through techniques like hyperparameter optimization,
-       feature engineering, and model ensembles, AutoML enhances the efficiency of model development.
-    AutoML tools expedite the development process by automatically experimenting with various algorithms and configurations
-     to create the optimal model for a given dataset. These tools are particularly helpful for users without extensive
-      knowledge in machine learning as they simplify and accelerate the modeling process.""")
+    tab.image("pictures/Detective.png")
 
+    tab.subheader("Automated machine learning")
+    tab.write("""Automated machine learning, or AutoML for short, is like having a magical helper for solving puzzles! Imagine you're trying to find patterns in a jumble of information. Instead of having to figure out every single step on your own, there's this amazing tool that speeds up the process, making it much simpler. AutoML uses computers to automatically find the best ways to spot these patterns and make predictions based on the information given. It's like an intelligent friend who helps guide you without needing to learn everything from the beginning.
+
+What makes AutoML really cool is that it handles the tricky parts of finding patterns in data, which makes it something that almost anyone can use – you don't need to be a computer expert. AutoML takes care of choosing the best methods, setting them up, and making them work as well as possible for spotting patterns and making predictions. It figures out the best approaches and settings for a particular problem all by itself, without a person having to step in or know a lot about the process. By using smart strategies to improve how we develop these methods, AutoML makes the whole process more efficient.
+
+AutoML tools speed up the job by trying out different methods and settings automatically to find the very best one for understanding the information given. These tools are especially great for people who aren't very familiar with the technical side of finding patterns in data because they make everything much easier and quicker to do.""")
+    tab.image("pictures/detective assistant.png")
 
 

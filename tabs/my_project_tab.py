@@ -29,7 +29,7 @@ def display(tab):
 
     tab.subheader("Auto-Machine Learning for Polymer Property Prediction from SMILES Strings")
     tab.write("In this tutorial, we focus on using Auto-ML libraries to predict polymer properties from SMILES strings, which are used to represent the structure of chemical species. We will generate molecular fingerprints from these SMILES strings, providing a numerical representation that can be used for machine learning predictions.")
-
+    tab.write("You can find the Polymer Properties  Dataset here https://khazana.gatech.edu/dataset/")
 
 
     tab1, tab2, tab3, tab4, tab5 = tab.tabs(

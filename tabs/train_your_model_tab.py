@@ -73,12 +73,31 @@ def display(tab):
         input_file = tab.file_uploader('Upload Data', type=["csv", "xlsx"])
 
     if input_file is not None:
-        #with st.spinner('Loading data..'):
-        try:
-            df,show_button = load_uploaded_file(input_file)
-            tab.success("Successfully uploaded!")
-        except Exception as e:
-            st.write(f"An error occurred: {e}")
+        with st.spinner('Loading data...'):
+            try:
+                df, show_button = load_uploaded_file(input_file)
+                tab.success("Successfully uploaded!")
+
+                # Zeige die Daten und Informationen innerhalb des bestehenden tab-Bereichs an
+                with tab:
+                    # Datenstatistiken und Informationen
+                    with tab.expander("Data Information", expanded=True):
+                        # Formatierung mit Markdown für eine schönere Darstellung
+                        data_info = (
+                            f"**Data Shape:** {df.shape[0]} rows and {df.shape[1]} columns\n\n"
+                            f"**Total Missing Values:** {df.isnull().sum().sum()}\n\n"
+                            f"**Missing Values by Column:**\n```\n{df.isnull().sum()}\n```\n"
+                            f"**Percentage of Missing Values by Column:**\n```\n{df.isnull().sum() / len(df) * 100}\n```\n"
+                            f"**Unique Values by Column:**\n```\n{df.nunique()}\n```"
+                        )
+                        tab.markdown(data_info, unsafe_allow_html=True)
+
+                    # Datenansicht
+                    with tab.expander("View Data", expanded=True):
+                        tab.dataframe(df)
+
+            except Exception as e:
+                tab.error(f"An error occurred: {e}")
 
     tab.subheader("2. Choose your target column")
     tab.write("Please select the column from your data that you'd like the model to predict. This is your 'target' or 'label' column. It should contain the outcome or result that you're investigating.")
@@ -93,10 +112,20 @@ def display(tab):
     #model_trained = False
     if show_button:
         if tab.button("Start"):
+            # Display a message with a darker red background to indicate the process is running
             with st.spinner('Training in progress...'):
-                time.sleep(2)  # Simulieren einer Verzögerung für das Training
-                model_trained = True  # Setzen Sie dies auf True, wenn das Training erfolgreich war
-                model,model_overview = auto_gluon_auto_ml.train_model(df=df,target_column=choice)
+                status_placeholder = tab.empty()
+                status_placeholder.markdown(
+                    "<h1 style='color: white; background-color: #8B0000; padding: 10px;'>Training is currently running, please wait...</h1>",
+                    unsafe_allow_html=True)
+
+                time.sleep(2)  # Simulate a delay for training
+
+                # Start the training process
+                model, model_overview = auto_gluon_auto_ml.train_model(df=df, target_column=choice)
+
+                # Clear the message after training is complete
+                status_placeholder.empty()
                 tab.success("Training completed!")
 
     tab.subheader("4. See your results")
